@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using ParkyAPI.Models;
 using ParkyAPI.Models.Dtos;
@@ -29,6 +31,7 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(200, Type = typeof(List<NationalParkDto>))]
         public IActionResult GetNationalParks()
         {
             var nationalParks = _nationalParkRepository.GetNationalParks();
@@ -37,6 +40,8 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetNationalPark")]
+        [ProducesResponseType(200, Type = typeof(NationalParkDto))]
+        [ProducesResponseType(404)]
         public IActionResult GetNationalPark(int id)
         {
             var np = _nationalParkRepository.GetNationalPark(id);
@@ -49,6 +54,8 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(201, Type = typeof(NationalParkDto))]
+        [ProducesResponseType(400)]
         public IActionResult CreateNationalPark([FromBody] NationalParkDto nationalParkDto)
         {
             if (nationalParkDto == null)
@@ -75,6 +82,8 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpPatch("{id:int}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
         public IActionResult UpdateNationalPark(int id, [FromBody] NationalParkDto nationalParkDto)
         {
             if (nationalParkDto == null || id != nationalParkDto.Id)
@@ -95,6 +104,8 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
         public IActionResult DeleteNationalPark(int id)
         {
             var nationalPark = _nationalParkRepository.GetNationalPark(id);
