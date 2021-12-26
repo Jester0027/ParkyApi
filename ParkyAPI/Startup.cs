@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using ParkyAPI.Data;
+using ParkyAPI.Mapper;
 using ParkyAPI.Repository;
 using ParkyAPI.Repository.IRepository;
 
@@ -36,6 +37,7 @@ namespace ParkyAPI
             });
             services.AddControllers();
             services.AddScoped<INationalParkRepository, NationalParkRepository>();
+            services.AddAutoMapper(typeof(ParkyMappings));
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "ParkyAPI", Version = "v1"}); });
         }
 
