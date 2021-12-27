@@ -10,7 +10,7 @@ namespace ParkyAPI.Controllers
     [Route("api/v{version:apiVersion}/national-parks")]
     [ApiVersion("2.0")]
     [ApiController]
-    public class NationalParkV2Controller : Controller
+    public class NationalParkV2Controller : ControllerBase
     {
         private readonly INationalParkRepository _nationalParkRepository;
         private readonly IMapper _mapper;
