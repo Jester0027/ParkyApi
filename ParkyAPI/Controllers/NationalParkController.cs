@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using ParkyAPI.Models;
 using ParkyAPI.Models.Dtos;
@@ -11,8 +10,10 @@ using ParkyAPI.Repository.IRepository;
 
 namespace ParkyAPI.Controllers
 {
-    [Route("api/[controller]")]
+    // [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/national-parks")]
     [ApiController]
+    // [ApiExplorerSettings(GroupName = "v1-national-park")]
     public class NationalParkController : Controller
     {
         private readonly INationalParkRepository _nationalParkRepository;
@@ -78,7 +79,7 @@ namespace ParkyAPI.Controllers
 
             var date = DateTime.Now;
             _logger.LogInformation("[{date}] National park added: {nationalPark.Name} ({nationalPark.Id})", date, nationalPark.Name, nationalPark.Id);
-            return CreatedAtRoute("GetNationalPark", new {id = nationalPark.Id}, nationalPark);
+            return CreatedAtRoute("GetNationalPark", new {Version = HttpContext.GetRequestedApiVersion(), id = nationalPark.Id}, nationalPark);
         }
 
         [HttpPatch("{id:int}")]
