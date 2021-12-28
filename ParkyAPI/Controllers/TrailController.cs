@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ParkyAPI.Models;
@@ -12,6 +13,7 @@ namespace ParkyAPI.Controllers
 {
     // [Route("/api/[controller]")]
     [Route("api/v{version:apiVersion}/trails")]
+    [Authorize]
     [ApiController]
     // [ApiExplorerSettings(GroupName = "v1-trail")]
     public class TrailController : ControllerBase
@@ -32,6 +34,7 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(200, Type = typeof(List<TrailDto>))]
         public IActionResult GetTrails()
         {
@@ -41,8 +44,10 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetTrail")]
+        [AllowAnonymous]
         [ProducesResponseType(200, Type = typeof(TrailDto))]
         [ProducesResponseType(404)]
+        [Authorize(Roles = "Admin")]
         public IActionResult GetTrail(int id)
         {
             var trail = _trailRepository.GetTrail(id);
@@ -56,6 +61,7 @@ namespace ParkyAPI.Controllers
         }
         
         [HttpGet("[action]/{nationalParkId:int}", Name = "GetTrailsInNationalPark")]
+        [AllowAnonymous]
         [ProducesResponseType(200, Type = typeof(TrailDto))]
         [ProducesResponseType(404)]
         public IActionResult GetTrailsInNationalPark(int nationalParkId)
@@ -66,6 +72,7 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(201, Type = typeof(NationalParkDto))]
         [ProducesResponseType(400)]
         public IActionResult CreateTrail([FromBody] TrailCreateDto trailDto)
@@ -94,6 +101,7 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpPatch("{id:int}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         public IActionResult UpdateTrail(int id, [FromBody] TrailUpdateDto trailDto)
@@ -116,6 +124,7 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
         public IActionResult DeleteTrail(int id)

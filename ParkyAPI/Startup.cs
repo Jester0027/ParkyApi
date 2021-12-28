@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -13,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ParkyAPI.Data;
 using ParkyAPI.Mapper;
@@ -34,6 +37,7 @@ namespace ParkyAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
             services.AddDbContext<ApplicationDbContext>(option =>
             {
                 option.UseSqlServer(Configuration.GetConnectionString("Default"));
@@ -41,6 +45,7 @@ namespace ParkyAPI
             services.AddControllers();
             services.AddScoped<INationalParkRepository, NationalParkRepository>();
             services.AddScoped<ITrailRepository, TrailRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
             services.AddAutoMapper(typeof(ParkyMappings));
             services.AddApiVersioning(options =>
             {
@@ -48,14 +53,34 @@ namespace ParkyAPI
                 options.DefaultApiVersion = new ApiVersion(1, 0);
                 options.ReportApiVersions = true;
             });
-            services.AddVersionedApiExplorer(options =>
-            {
-                options.GroupNameFormat = "'v'VVV";
-            });
+            services.AddVersionedApiExplorer(options => { options.GroupNameFormat = "'v'VVV"; });
 
             services.AddSwaggerGen();
             services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-            
+
+            var appSettingsSection = Configuration.GetSection("AppSettings");
+            services.Configure<AppSettings>(appSettingsSection);
+
+            var appSettings = appSettingsSection.Get<AppSettings>();
+            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
+
             // services.AddSwaggerGen(c =>
             // {
             //     // c.SwaggerDoc("v1-national-park", new OpenApiInfo {Title = "ParkyAPI", Version = "v1"});
@@ -75,8 +100,10 @@ namespace ParkyAPI
                 {
                     foreach (var description in provider.ApiVersionDescriptions)
                     {
-                        c.SwaggerEndpoint($"swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
+                        c.SwaggerEndpoint($"swagger/{description.GroupName}/swagger.json",
+                            description.GroupName.ToUpperInvariant());
                     }
+
                     c.RoutePrefix = "";
                 });
                 // app.UseSwaggerUI(c =>
@@ -90,6 +117,10 @@ namespace ParkyAPI
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(x => { x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(); });
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

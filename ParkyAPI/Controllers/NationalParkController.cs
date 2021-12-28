@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ParkyAPI.Models;
@@ -12,6 +13,7 @@ namespace ParkyAPI.Controllers
 {
     // [Route("api/[controller]")]
     [Route("api/v{version:apiVersion}/national-parks")]
+    [Authorize]
     [ApiController]
     // [ApiExplorerSettings(GroupName = "v1-national-park")]
     public class NationalParkController : ControllerBase
@@ -32,6 +34,7 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(200, Type = typeof(List<NationalParkDto>))]
         public IActionResult GetNationalParks()
         {
@@ -41,6 +44,7 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetNationalPark")]
+        [AllowAnonymous]
         [ProducesResponseType(200, Type = typeof(NationalParkDto))]
         [ProducesResponseType(404)]
         public IActionResult GetNationalPark(int id)
@@ -55,6 +59,7 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(201, Type = typeof(NationalParkDto))]
         [ProducesResponseType(400)]
         public IActionResult CreateNationalPark([FromBody] NationalParkDto nationalParkDto)
@@ -83,6 +88,7 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpPatch("{id:int}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         public IActionResult UpdateNationalPark(int id, [FromBody] NationalParkDto nationalParkDto)
@@ -105,6 +111,7 @@ namespace ParkyAPI.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
         public IActionResult DeleteNationalPark(int id)
